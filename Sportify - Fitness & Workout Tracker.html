@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sportify - Running & Exercise Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        sport: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                            dark: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#10b981'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for smooth sporty feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-sport-500 selection:text-white">
+
+    <!-- Top Navigation -->
+    <header class="bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-emerald-500 to-green-400 p-2.5 rounded-xl shadow-lg shadow-emerald-500/20 text-slate-950">
+                    <i class="fa-solid fa-person-running text-xl font-bold"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent">Sportify</span>
+                    <span class="text-xs block text-emerald-400 font-medium tracking-wide uppercase">Fitness Tracker</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="openModal('workoutModal')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center space-x-2 active:scale-95">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="hidden sm:inline">Log Workout</span>
+                </button>
+                <button onclick="toggleTheme()" class="bg-slate-800 hover:bg-slate-700 p-2.5 rounded-xl text-slate-300 transition-all">
+                    <i id="themeIcon" class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container with Tabs -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex overflow-x-auto space-x-2 border-b border-slate-800 pb-2 scrollbar-none">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20">
+                <i class="fa-solid fa-chart-pie mr-2"></i>Dashboard
+            </button>
+            <button onclick="switchTab('logger')" id="tab-logger" class="tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200">
+                <i class="fa-solid fa-dumbbell mr-2"></i>Workout Log
+            </button>
+            <button onclick="switchTab('timer')" id="tab-timer" class="tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200">
+                <i class="fa-solid fa-stopwatch mr-2"></i>Stopwatch & Laps
+            </button>
+            <button onclick="switchTab('routines')" id="tab-routines" class="tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200">
+                <i class="fa-solid fa-clipboard-list mr-2"></i>Routine Builder
+            </button>
+        </div>
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="view-dashboard" class="space-y-6">
+            <!-- Greeting & Quick Stats Header -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-800 border border-slate-800 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-xl">
+                <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-heart-pulse text-9xl text-emerald-400"></i>
+                </div>
+                <div class="relative z-10 max-w-2xl">
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Welcome back, Athlete! 💪</h1>
+                    <p class="text-slate-400 mt-2 text-sm sm:text-base">Track your progress, stay consistent, and crush your weekly fitness targets. Every workout counts.</p>
+                </div>
+            </div>
+
+            <!-- Weekly Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Distance</span>
+                        <div class="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl">
+                            <i class="fa-solid fa-route text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span id="stat-distance" class="text-3xl font-extrabold text-white">0.0</span>
+                        <span class="text-sm font-semibold text-slate-400 ml-1">km</span>
+                    </div>
+                    <div class="mt-2 text-xs text-blue-400 flex items-center font-medium">
+                        <i class="fa-solid fa-arrow-up mr-1"></i> Weekly Goal: 25 km
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Calories Burned</span>
+                        <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+                            <i class="fa-solid fa-fire text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span id="stat-calories" class="text-3xl font-extrabold text-white">0</span>
+                        <span class="text-sm font-semibold text-slate-400 ml-1">kcal</span>
+                    </div>
+                    <div class="mt-2 text-xs text-amber-400 flex items-center font-medium">
+                        <i class="fa-solid fa-bolt mr-1"></i> Weekly Goal: 2,500 kcal
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Active Time</span>
+                        <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl">
+                            <i class="fa-solid fa-stopwatch text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span id="stat-time" class="text-3xl font-extrabold text-white">0</span>
+                        <span class="text-sm font-semibold text-slate-400 ml-1">mins</span>
+                    </div>
+                    <div class="mt-2 text-xs text-emerald-400 flex items-center font-medium">
+                        <i class="fa-solid fa-bullseye mr-1"></i> Weekly Goal: 180 mins
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Workouts Completed</span>
+                        <div class="p-2.5 bg-purple-500/10 text-purple-400 rounded-xl">
+                            <i class="fa-solid fa-dumbbell text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span id="stat-workouts" class="text-3xl font-extrabold text-white">0</span>
+                        <span class="text-sm font-semibold text-slate-400 ml-1">sessions</span>
+                    </div>
+                    <div class="mt-2 text-xs text-purple-400 flex items-center font-medium">
+                        <i class="fa-solid fa-trophy mr-1"></i> Keep the streak alive!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Workouts Overview & Quick Actions -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Recent Activities List -->
+                <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-white flex items-center">
+                            <i class="fa-solid fa-history mr-2 text-emerald-400"></i>Recent Activities
+                        </h2>
+                        <button onclick="switchTab('logger')" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold">View All &rarr;</button>
+                    </div>
+                    <div id="recentWorkoutsList" class="space-y-3 flex-1 overflow-y-auto max-h-[350px]">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Quick Workout Launcher & Motivational Card -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center mb-3">
+                            <i class="fa-solid fa-bolt mr-2 text-amber-400"></i>Quick Launch
+                        </h2>
+                        <p class="text-xs text-slate-400 mb-4">Start an instant stopwatch or log a frequent workout category with one tap.</p>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-6">
+                            <button onclick="quickStartWorkout('Running')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700/60 p-3 rounded-xl text-left transition-all group">
+                                <div class="text-emerald-400 mb-1 group-hover:scale-110 transition-transform"><i class="fa-solid fa-person-running text-lg"></i></div>
+                                <span class="text-xs font-bold text-slate-200 block">Running</span>
+                                <span class="text-[10px] text-slate-400">Cardio session</span>
+                            </button>
+                            <button onclick="quickStartWorkout('Cycling')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700/60 p-3 rounded-xl text-left transition-all group">
+                                <div class="text-blue-400 mb-1 group-hover:scale-110 transition-transform"><i class="fa-solid fa-bicycle text-lg"></i></div>
+                                <span class="text-xs font-bold text-slate-200 block">Cycling</span>
+                                <span class="text-[10px] text-slate-400">Outdoor ride</span>
+                            </button>
+                            <button onclick="quickStartWorkout('Strength')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700/60 p-3 rounded-xl text-left transition-all group">
+                                <div class="text-purple-400 mb-1 group-hover:scale-110 transition-transform"><i class="fa-solid fa-dumbbell text-lg"></i></div>
+                                <span class="text-xs font-bold text-slate-200 block">Strength</span>
+                                <span class="text-[10px] text-slate-400">Weights & lifting</span>
+                            </button>
+                            <button onclick="quickStartWorkout('Yoga')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700/60 p-3 rounded-xl text-left transition-all group">
+                                <div class="text-pink-400 mb-1 group-hover:scale-110 transition-transform"><i class="fa-solid fa-spa text-lg"></i></div>
+                                <span class="text-xs font-bold text-slate-200 block">Yoga & Core</span>
+                                <span class="text-[10px] text-slate-400">Flexibility</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-emerald-950/40 to-slate-900 border border-emerald-500/20 p-4 rounded-xl">
+                        <div class="flex items-center space-x-3">
+                            <div class="text-emerald-400 text-xl"><i class="fa-solid fa-lightbulb"></i></div>
+                            <div>
+                                <h4 class="text-xs font-bold text-emerald-300">Pro Fitness Tip</h4>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Stay hydrated! Drink at least 500ml of water 2 hours before your running session.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: WORKOUT LOGGER -->
+        <section id="view-logger" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-white">Workout Log</h1>
+                    <p class="text-slate-400 text-sm">Manage, filter, and review all your logged fitness activities.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <select id="filterCategory" onchange="renderWorkoutLog()" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                        <option value="All">All Categories</option>
+                        <option value="Running">Running</option>
+                        <option value="Cycling">Cycling</option>
+                        <option value="Strength">Strength</option>
+                        <option value="Yoga">Yoga</option>
+                        <option value="Swimming">Swimming</option>
+                        <option value="Walking">Walking</option>
+                        <option value="HIIT">HIIT</option>
+                    </select>
+                    <button onclick="openModal('workoutModal')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add New</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Workout Log Table / Grid Container -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-900/50 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                <th class="py-4 px-6">Activity</th>
+                                <th class="py-4 px-6">Date</th>
+                                <th class="py-4 px-6">Duration</th>
+                                <th class="py-4 px-6">Distance</th>
+                                <th class="py-4 px-6">Calories</th>
+                                <th class="py-4 px-6">Notes</th>
+                                <th class="py-4 px-6 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workoutTableBody" class="divide-y divide-slate-800/60 text-sm">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyLogState" class="hidden py-16 text-center">
+                    <div class="text-slate-600 text-4xl mb-3"><i class="fa-solid fa-folder-open"></i></div>
+                    <p class="text-slate-400 font-medium">No workouts found.</p>
+                    <p class="text-xs text-slate-500 mt-1">Start logging your workouts or select a different filter.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: STOPWATCH & TIMER -->
+        <section id="view-timer" class="hidden space-y-6">
+            <div>
+                <h1 class="text-2xl font-extrabold text-white">Interactive Stopwatch & Timer</h1>
+                <p class="text-slate-400 text-sm">Track your live workout session duration and record laps instantly.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Stopwatch Card -->
+                <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl flex flex-col items-center justify-center text-center">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-xs font-bold mb-6">
+                        <i class="fa-solid fa-circle text-[8px] animate-pulse"></i>
+                        <span id="timerModeLabel">Live Session Stopwatch</span>
+                    </div>
+
+                    <!-- Time Display -->
+                    <div id="stopwatchDisplay" class="text-6xl sm:text-8xl font-black text-white tracking-widest font-mono my-4 drop-shadow-md">
+                        00:00:00.<span class="text-3xl sm:text-4xl text-emerald-400">00</span>
+                    </div>
+
+                    <!-- Control Buttons -->
+                    <div class="flex flex-wrap items-center justify-center gap-4 mt-8 w-full max-w-md">
+                        <button id="startStopBtn" onclick="toggleStopwatch()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-4 px-6 rounded-2xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 text-base">
+                            <i id="startStopIcon" class="fa-solid fa-play"></i>
+                            <span id="startStopText">Start</span>
+                        </button>
+                        <button onclick="recordLap()" id="lapBtn" disabled class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-4 px-6 rounded-2xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-2">
+                            <i class="fa-solid fa-flag"></i>
+                            <span>Lap</span>
+                        </button>
+                        <button onclick="resetStopwatch()" class="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-bold py-4 px-5 rounded-2xl transition-all flex items-center space-x-2">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Quick Session Logger from Timer -->
+                    <div class="mt-8 pt-6 border-t border-slate-800 w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="text-left w-full sm:w-auto">
+                            <span class="text-xs text-slate-400 block font-medium">Ready to save session?</span>
+                            <span id="timerRecordedSummary" class="text-sm font-bold text-emerald-400">0 mins recorded</span>
+                        </div>
+                        <button onclick="saveTimerToWorkout()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-floppy-disk text-emerald-400"></i>
+                            <span>Save as Workout</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Laps History Panel -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col h-[400px] lg:h-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-base font-bold text-white flex items-center">
+                            <i class="fa-solid fa-flag-checkered mr-2 text-emerald-400"></i>Lap Records
+                        </h2>
+                        <span id="lapCountBadge" class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full font-bold">0 Laps</span>
+                    </div>
+                    <div id="lapsList" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                        <div class="text-center py-12 text-slate-500 text-sm">
+                            No laps recorded yet.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: ROUTINE BUILDER -->
+        <section id="view-routines" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-white">Workout Plans & Routine Builder</h1>
+                    <p class="text-slate-400 text-sm">Choose from pre-set expert routines or create your own custom weekly plans.</p>
+                </div>
+                <button onclick="openModal('routineModal')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center space-x-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Create Routine</span>
+                </button>
+            </div>
+
+            <!-- Routines Grid -->
+            <div id="routinesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 border-t border-slate-800 mt-12 py-6 text-center text-xs text-slate-400">
+        <p>Sportify Fitness Tracker &copy; 2026. Stay active, stay healthy.</p>
+    </footer>
+
+    <!-- MODAL: ADD / EDIT WORKOUT -->
+    <div id="workoutModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 id="workoutModalTitle" class="text-lg font-bold text-white flex items-center">
+                    <i class="fa-solid fa-dumbbell mr-2 text-emerald-400"></i>Log New Workout
+                </h3>
+                <button onclick="closeModal('workoutModal')" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="workoutForm" onsubmit="handleWorkoutSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="workoutEditId">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Exercise Type</label>
+                        <select id="workoutType" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                            <option value="Running">Running</option>
+                            <option value="Cycling">Cycling</option>
+                            <option value="Strength">Strength Training</option>
+                            <option value="Yoga">Yoga & Flexibility</option>
+                            <option value="Swimming">Swimming</option>
+                            <option value="Walking">Walking</option>
+                            <option value="HIIT">HIIT Workout</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Date</label>
+                        <input type="date" id="workoutDate" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Duration (mins)</label>
+                        <input type="number" id="workoutDuration" min="1" required placeholder="30" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Distance (km)</label>
+                        <input type="number" id="workoutDistance" step="0.01" min="0" placeholder="5.2" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Calories (kcal)</label>
+                        <input type="number" id="workoutCalories" min="0" placeholder="350" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Notes / Highlights</label>
+                    <textarea id="workoutNotes" rows="3" placeholder="Felt great, maintained good pace..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 resize-none"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('workoutModal')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all">Cancel</button>
+                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-6 py-2.5 rounded-xl text-sm font-extrabold transition-all shadow-lg shadow-emerald-500/20">Save Workout</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD ROUTINE -->
+    <div id="routineModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center">
+                    <i class="fa-solid fa-clipboard-list mr-2 text-emerald-400"></i>Create Custom Routine
+                </h3>
+                <button onclick="closeModal('routineModal')" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="routineForm" onsubmit="handleRoutineSubmit(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Routine Name</label>
+                    <input type="text" id="routineName" required placeholder="e.g. Marathon Prep 5K" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Target Category</label>
+                        <select id="routineCategory" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                            <option value="Running">Running</option>
+                            <option value="Cycling">Cycling</option>
+                            <option value="Strength">Strength Training</option>
+                            <option value="Yoga">Yoga & Core</option>
+                            <option value="HIIT">HIIT</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Frequency</label>
+                        <input type="text" id="routineFrequency" required placeholder="e.g. 3x per week" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Description / Exercises</label>
+                    <textarea id="routineDesc" rows="3" required placeholder="1. Warm-up jog (10m)&#10;2. Interval sprints (4x 400m)&#10;3. Cool-down stretch" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 resize-none"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('routineModal')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all">Cancel</button>
+                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-6 py-2.5 rounded-xl text-sm font-extrabold transition-all shadow-lg shadow-emerald-500/20">Save Routine</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CUSTOM TOAST / ALERT NOTIFICATION -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 border border-slate-700 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3">
+        <div id="toastIcon" class="text-emerald-400 text-lg"><i class="fa-solid fa-circle-check"></i></div>
+        <div id="toastMessage" class="text-sm font-semibold">Action completed successfully!</div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Default Local Storage Data Initialization
+        let workouts = JSON.parse(localStorage.getItem('sportify_workouts')) || [
+            { id: '1', type: 'Running', date: '2026-10-30', duration: 45, distance: 7.5, calories: 520, notes: 'Morning interval run around the park.' },
+            { id: '2', type: 'Strength', date: '2026-10-28', duration: 60, distance: 0, calories: 410, notes: 'Upper body push day (Bench press & shoulders).' },
+            { id: '3', type: 'Cycling', date: '2026-10-26', duration: 90, distance: 28.4, calories: 780, notes: 'Long weekend cycling route.' }
+        ];
+
+        let routines = JSON.parse(localStorage.getItem('sportify_routines')) || [
+            { id: 'r1', name: '5K Endurance Builder', category: 'Running', frequency: '3x / Week', desc: 'Interval training designed to boost aerobic capacity and speed for a 5K race.' },
+            { id: 'r2', name: 'Full Body Hypertrophy', category: 'Strength', frequency: '4x / Week', desc: 'Compound heavy lifting focused on squats, deadlifts, and bench press.' },
+            { id: 'r3', name: 'Core & Mobility Yoga', category: 'Yoga', frequency: 'Daily', desc: 'Deep stretching and core strengthening to prevent running injuries.' }
+        ];
+
+        // Stopwatch State Variables
+        let stopwatchInterval = null;
+        let stopwatchTime = 0; // in milliseconds
+        let isRunning = false;
+        let laps = [];
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            // Set today's date on modal date input
+            document.getElementById('workoutDate').valueAsDate = new Date();
+            
+            updateDashboard();
+            renderWorkoutLog();
+            renderRoutines();
+        };
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            const tabs = ['dashboard', 'logger', 'timer', 'routines'];
+            tabs.forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tabId) {
+                    view.classList.remove('hidden');
+                    btn.className = "tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20";
+                } else {
+                    view.classList.add('hidden');
+                    btn.className = "tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200";
+                }
+            });
+        }
+
+        // Theme Toggle (Dark / Light sporty simulation)
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.className = "fa-solid fa-sun";
+                showToast("Light sporty theme enabled", "info");
+            } else {
+                html.classList.add('dark');
+                icon.className = "fa-solid fa-moon";
+                showToast("Dark sporty theme enabled", "info");
+            }
+        }
+
+        // Modal Helpers
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            if (modalId === 'workoutModal') {
+                document.getElementById('workoutForm').reset();
+                document.getElementById('workoutEditId').value = '';
+                document.getElementById('workoutDate').valueAsDate = new Date();
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            toastMsg.textContent = message;
+            if(type === 'success') {
+                toastIcon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+            } else {
+                toastIcon.innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // --- DASHBOARD FUNCTIONS ---
+        function updateDashboard() {
+            let totalDist = 0;
+            let totalCals = 0;
+            let totalMins = 0;
+            let count = workouts.length;
+
+            workouts.forEach(w => {
+                totalDist += parseFloat(w.distance || 0);
+                totalCals += parseInt(w.calories || 0);
+                totalMins += parseInt(w.duration || 0);
+            });
+
+            document.getElementById('stat-distance').textContent = totalDist.toFixed(1);
+            document.getElementById('stat-calories').textContent = totalCals.toLocaleString();
+            document.getElementById('stat-time').textContent = totalMins;
+            document.getElementById('stat-workouts').textContent = count;
+
+            // Render Recent Activities list (top 5)
+            const recentList = document.getElementById('recentWorkoutsList');
+            recentList.innerHTML = '';
+
+            const sorted = [...workouts].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+
+            if(sorted.length === 0) {
+                recentList.innerHTML = `<div class="text-center py-8 text-slate-500 text-sm">No recent workouts logged yet.</div>`;
+                return;
+            }
+
+            sorted.forEach(w => {
+                const iconClass = getCategoryIcon(w.type);
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800/80 rounded-xl hover:bg-slate-800/50 transition-all";
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2.5 bg-slate-800 rounded-xl text-emerald-400">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-white text-sm block">${w.type}</span>
+                            <span class="text-xs text-slate-400">${w.date} &bull; ${w.duration} mins ${w.distance > 0 ? '&bull; ' + w.distance + ' km' : ''}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-extrabold text-amber-400 block">${w.calories || 0} kcal</span>
+                    </div>
+                `;
+                recentList.appendChild(item);
+            });
+        }
+
+        function getCategoryIcon(type) {
+            switch(type) {
+                case 'Running': return 'fa-solid fa-person-running';
+                case 'Cycling': return 'fa-solid fa-bicycle';
+                case 'Strength': return 'fa-solid fa-dumbbell';
+                case 'Yoga': return 'fa-solid fa-spa';
+                case 'Swimming': return 'fa-solid fa-person-swimming';
+                case 'Walking': return 'fa-solid fa-person-walking';
+                case 'HIIT': return 'fa-solid fa-bolt';
+                default: return 'fa-solid fa-heart-pulse';
+            }
+        }
+
+        // Quick start from dashboard
+        function quickStartWorkout(type) {
+            switchTab('timer');
+            document.getElementById('timerModeLabel').textContent = `${type} Live Session`;
+            startStopwatch();
+            showToast(`Started live timer for ${type}!`);
+        }
+
+        // --- WORKOUT LOGGER FUNCTIONS ---
+        function handleWorkoutSubmit(event) {
+            event.preventDefault();
+            const editId = document.getElementById('workoutEditId').value;
+            const type = document.getElementById('workoutType').value;
+            const date = document.getElementById('workoutDate').value;
+            const duration = parseInt(document.getElementById('workoutDuration').value);
+            const distance = parseFloat(document.getElementById('workoutDistance').value) || 0;
+            const calories = parseInt(document.getElementById('workoutCalories').value) || Math.round(duration * 7.5);
+            const notes = document.getElementById('workoutNotes').value;
+
+            if (editId) {
+                // Edit existing
+                workouts = workouts.map(w => w.id === editId ? { id: editId, type, date, duration, distance, calories, notes } : w);
+                showToast("Workout updated successfully!");
+            } else {
+                // Add new
+                const newWorkout = {
+                    id: Date.now().toString(),
+                    type, date, duration, distance, calories, notes
+                };
+                workouts.unshift(newWorkout);
+                showToast("Workout logged successfully!");
+            }
+
+            localStorage.setItem('sportify_workouts', JSON.stringify(workouts));
+            closeModal('workoutModal');
+            updateDashboard();
+            renderWorkoutLog();
+        }
+
+        function renderWorkoutLog() {
+            const filter = document.getElementById('filterCategory').value;
+            const tbody = document.getElementById('workoutTableBody');
+            const emptyState = document.getElementById('emptyLogState');
+            tbody.innerHTML = '';
+
+            let filtered = workouts;
+            if (filter !== 'All') {
+                filtered = workouts.filter(w => w.type === filter);
+            }
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(w => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-4 px-6 font-medium text-white flex items-center space-x-3">
+                        <div class="p-2 bg-slate-800 rounded-lg text-emerald-400">
+                            <i class="${getCategoryIcon(w.type)}"></i>
+                        </div>
+                        <span>${w.type}</span>
+                    </td>
+                    <td class="py-4 px-6 text-slate-300 text-xs">${w.date}</td>
+                    <td class="py-4 px-6 text-slate-300 font-semibold">${w.duration} mins</td>
+                    <td class="py-4 px-6 text-slate-300">${w.distance > 0 ? w.distance + ' km' : '-'}</td>
+                    <td class="py-4 px-6 text-amber-400 font-semibold">${w.calories} kcal</td>
+                    <td class="py-4 px-6 text-slate-400 text-xs max-w-xs truncate">${w.notes || '-'}</td>
+                    <td class="py-4 px-6 text-right space-x-2">
+                        <button onclick="editWorkout('${w.id}')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all" title="Edit">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                        <button onclick="deleteWorkout('${w.id}')" class="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg transition-all" title="Delete">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editWorkout(id) {
+            const w = workouts.find(item => item.id === id);
+            if (!w) return;
+
+            document.getElementById('workoutEditId').value = w.id;
+            document.getElementById('workoutType').value = w.type;
+            document.getElementById('workoutDate').value = w.date;
+            document.getElementById('workoutDuration').value = w.duration;
+            document.getElementById('workoutDistance').value = w.distance;
+            document.getElementById('workoutCalories').value = w.calories;
+            document.getElementById('workoutNotes').value = w.notes;
+
+            openModal('workoutModal');
+        }
+
+        function deleteWorkout(id) {
+            if (confirm("Are you sure you want to delete this workout record?")) {
+                workouts = workouts.filter(w => w.id !== id);
+                localStorage.setItem('sportify_workouts', JSON.stringify(workouts));
+                updateDashboard();
+                renderWorkoutLog();
+                showToast("Workout deleted successfully!", "info");
+            }
+        }
+
+        // --- STOPWATCH & TIMER FUNCTIONS ---
+        function toggleStopwatch() {
+            if (isRunning) {
+                clearInterval(stopwatchInterval);
+                isRunning = false;
+                document.getElementById('startStopIcon').className = "fa-solid fa-play";
+                document.getElementById('startStopText').textContent = "Resume";
+                document.getElementById('lapBtn').disabled = true;
+            } else {
+                const startTime = Date.now() - stopwatchTime;
+                stopwatchInterval = setInterval(() => {
+                    stopwatchTime = Date.now() - startTime;
+                    updateStopwatchDisplay();
+                }, 10);
+                isRunning = true;
+                document.getElementById('startStopIcon').className = "fa-solid fa-pause";
+                document.getElementById('startStopText').textContent = "Pause";
+                document.getElementById('lapBtn').disabled = false;
+            }
+        }
+
+        function updateStopwatchDisplay() {
+            const totalMs = stopwatchTime;
+            const ms = Math.floor((totalMs % 1000) / 10);
+            const totalSecs = Math.floor(totalMs / 1000);
+            const secs = totalSecs % 60;
+            const mins = Math.floor(totalSecs / 60) % 60;
+            const hrs = Math.floor(totalSecs / 3600);
+
+            const formatted = `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.<span class="text-3xl sm:text-4xl text-emerald-400">${ms.toString().padStart(2, '0')}</span>`;
+            document.getElementById('stopwatchDisplay').innerHTML = formatted;
+
+            const totalMinsRecorded = Math.floor(totalSecs / 60);
+            document.getElementById('timerRecordedSummary').textContent = `${totalMinsRecorded} mins recorded (${(totalSecs/60).toFixed(1)}m)`;
+        }
+
+        function recordLap() {
+            if (!isRunning) return;
+            const totalMs = stopwatchTime;
+            laps.unshift({ id: laps.length + 1, time: totalMs });
+            renderLaps();
+        }
+
+        function renderLaps() {
+            const container = document.getElementById('lapsList');
+            container.innerHTML = '';
+            document.getElementById('lapCountBadge').textContent = `${laps.length} Laps`;
+
+            if (laps.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-slate-500 text-sm">No laps recorded yet.</div>`;
+                return;
+            }
+
+            laps.forEach(lap => {
+                const totalSecs = Math.floor(lap.time / 1000);
+                const ms = Math.floor((lap.time % 1000) / 10);
+                const secs = totalSecs % 60;
+                const mins = Math.floor(totalSecs / 60);
+                const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-3 bg-slate-950/40 border border-slate-800/60 rounded-xl text-sm";
+                div.innerHTML = `
+                    <span class="font-bold text-slate-300">Lap ${lap.id}</span>
+                    <span class="font-mono font-bold text-emerald-400">${timeStr}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function resetStopwatch() {
+            clearInterval(stopwatchInterval);
+            isRunning = false;
+            stopwatchTime = 0;
+            laps = [];
+            updateStopwatchDisplay();
+            renderLaps();
+            document.getElementById('startStopIcon').className = "fa-solid fa-play";
+            document.getElementById('startStopText').textContent = "Start";
+            document.getElementById('lapBtn').disabled = true;
+            document.getElementById('timerRecordedSummary').textContent = "0 mins recorded";
+        }
+
+        function saveTimerToWorkout() {
+            const totalSecs = Math.floor(stopwatchTime / 1000);
+            const durationMins = Math.max(1, Math.round(totalSecs / 60));
+            
+            if (totalSecs < 5) {
+                showToast("Timer duration too short to save!", "info");
+                return;
+            }
+
+            // Populate workout modal with timer values
+            document.getElementById('workoutEditId').value = '';
+            document.getElementById('workoutType').value = 'Running';
+            document.getElementById('workoutDate').valueAsDate = new Date();
+            document.getElementById('workoutDuration').value = durationMins;
+            document.getElementById('workoutDistance').value = (durationMins * 0.12).toFixed(2); // estimated estimate
+            document.getElementById('workoutCalories').value = Math.round(durationMins * 8.5);
+            document.getElementById('workoutNotes').value = `Recorded via live stopwatch session (${laps.length} laps).`;
+
+            openModal('workoutModal');
+        }
+
+        // --- ROUTINE BUILDER FUNCTIONS ---
+        function handleRoutineSubmit(event) {
+            event.preventDefault();
+            const name = document.getElementById('routineName').value;
+            const category = document.getElementById('routineCategory').value;
+            const frequency = document.getElementById('routineFrequency').value;
+            const desc = document.getElementById('routineDesc').value;
+
+            const newRoutine = {
+                id: 'r_' + Date.now(),
+                name, category, frequency, desc
+            };
+
+            routines.push(newRoutine);
+            localStorage.setItem('sportify_routines', JSON.stringify(routines));
+            closeModal('routineModal');
+            document.getElementById('routineForm').reset();
+            renderRoutines();
+            showToast("Custom routine created successfully!");
+        }
+
+        function renderRoutines() {
+            const grid = document.getElementById('routinesGrid');
+            grid.innerHTML = '';
+
+            routines.forEach(r => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between hover:border-slate-700 transition-all";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full">${r.category}</span>
+                            <span class="text-xs font-medium text-slate-400"><i class="fa-solid fa-calendar-days mr-1"></i>${r.frequency}</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">${r.name}</h3>
+                        <p class="text-xs text-slate-400 whitespace-pre-line leading-relaxed mb-6">${r.desc}</p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+                        <button onclick="startRoutine('${r.name}', '${r.category}')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 flex items-center space-x-1.5">
+                            <i class="fa-solid fa-play"></i>
+                            <span>Start Routine</span>
+                        </button>
+                        <button onclick="deleteRoutine('${r.id}')" class="text-slate-500 hover:text-rose-400 p-2 text-xs transition-colors">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function startRoutine(name, category) {
+            switchTab('timer');
+            document.getElementById('timerModeLabel').textContent = `Routine: ${name}`;
+            resetStopwatch();
+            toggleStopwatch();
+            showToast(`Started routine: ${name}!`);
+        }
+
+        function deleteRoutine(id) {
+            if (confirm("Are you sure you want to delete this routine?")) {
+                routines = routines.filter(r => r.id !== id);
+                localStorage.setItem('sportify_routines', JSON.stringify(routines));
+                renderRoutines();
+                showToast("Routine deleted successfully!", "info");
+            }
+        }
+    </script>
+</body>
+</html>
